@@ -23,7 +23,8 @@
     Не включать диски с интерфейсом USB.
 
 .PARAMETER OutputDir
-    Папка для отчетов. По умолчанию - подпапка Reports рядом со скриптом.
+    Папка для отчетов. По умолчанию - подпапка Reports рядом со скриптом
+    (если скрипт запущен не из файла - в текущей папке).
 
 .PARAMETER NoReport
     Только вывести таблицу в консоль, файлы не создавать.
@@ -44,12 +45,18 @@
 [CmdletBinding()]
 param(
     [switch]$ExcludeUsb,
-    [string]$OutputDir = (Join-Path $PSScriptRoot 'Reports'),
+    [string]$OutputDir,
     [switch]$NoReport
 )
 
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
+
+# $PSScriptRoot пуст, если код запущен не из файла (вставка в консоль, F8 в ISE, dot-sourcing)
+if (-not $OutputDir) {
+    $baseDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+    $OutputDir = Join-Path $baseDir 'Reports'
+}
 
 function Convert-DiskSerial([string]$Serial) {
     if (-not $Serial) { return '' }

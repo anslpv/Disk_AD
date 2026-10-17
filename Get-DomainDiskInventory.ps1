@@ -42,7 +42,8 @@
     Учетные данные администратора, если текущая учетная запись не имеет прав на удаленных ПК.
 
 .PARAMETER OutputDir
-    Папка для отчетов. По умолчанию - подпапка Reports рядом со скриптом.
+    Папка для отчетов. По умолчанию - подпапка Reports рядом со скриптом
+    (если скрипт запущен не из файла - в текущей папке).
 
 .PARAMETER ThrottleLimit
     Сколько компьютеров опрашивать одновременно. По умолчанию 32.
@@ -73,13 +74,19 @@ param(
     [switch]$IncludeDisabled,
     [switch]$ExcludeUsb,
     [System.Management.Automation.PSCredential]$Credential,
-    [string]$OutputDir = (Join-Path $PSScriptRoot 'Reports'),
+    [string]$OutputDir,
     [ValidateRange(1, 256)][int]$ThrottleLimit = 32,
     [ValidateRange(5, 600)][int]$TimeoutSec = 30
 )
 
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
+
+# $PSScriptRoot пуст, если код запущен не из файла (вставка в консоль, F8 в ISE, dot-sourcing)
+if (-not $OutputDir) {
+    $baseDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+    $OutputDir = Join-Path $baseDir 'Reports'
+}
 
 #region Список компьютеров
 if ($ComputerName) {
