@@ -63,8 +63,9 @@ function Convert-DiskSerial([string]$Serial) {
     return $s.TrimEnd('.').Trim()
 }
 
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).
-    IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$principal = New-Object Security.Principal.WindowsPrincipal($identity)
+$isAdmin = $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
     Write-Warning 'Скрипт запущен без прав администратора: UniqueId и тип носителя (SSD/HDD) могут быть недоступны.'
 }
